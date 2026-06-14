@@ -24,5 +24,8 @@
             <button class="btn-admin" type="submit">دخول</button>
         </div>
     </form>
+    <div style="text-align:center; margin-top:16px;">
+        <a href="{{ route('home') }}" style="color:#c9a84c; font-size:14px; text-decoration:none;">← العودة إلى المتجر</a>
+    </div>
 </div>
 @endsection
