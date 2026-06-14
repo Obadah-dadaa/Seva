@@ -16,7 +16,7 @@
 
     <!-- يمين: لوغو + روابط -->
     <div class="nav-right">
-      <button class="nav-logo" onclick="showPage('home')" aria-label="SEVA">
+      <button class="nav-logo" onclick="_logoTap()" aria-label="SEVA">
         <img src="{{ asset('seva-logo-transparent.png') }}" alt="SEVA Logo" class="nav-logo-circle">
       </button>
       <div class="nav-links" id="navLinks">

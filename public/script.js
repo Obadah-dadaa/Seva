@@ -770,6 +770,22 @@ function applyFilters() {
   }
 }
 
+// ===== SECRET ADMIN ACCESS (5 quick clicks on logo) =====
+(function () {
+  var _clicks = 0, _timer = null;
+  window._logoTap = function () {
+    showPage('home');
+    _clicks++;
+    clearTimeout(_timer);
+    if (_clicks >= 5) {
+      _clicks = 0;
+      window.location.href = '/admin/login';
+      return;
+    }
+    _timer = setTimeout(function () { _clicks = 0; }, 2000);
+  };
+}());
+
 // ===== PAGE NAVIGATION =====
 function showPage(pageId) {
   document
