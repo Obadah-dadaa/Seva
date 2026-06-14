@@ -65,11 +65,11 @@
         </div>
       </a>
 
-      <a href="mailto:info@seva.com" class="contact-item">
+      <a href="mailto:info@seva-store.com" class="contact-item">
         <div class="contact-icon">📧</div>
         <div class="contact-info">
           <div class="contact-label">البريد الإلكتروني</div>
-          <div class="contact-value">info@seva.com</div>
+          <div class="contact-value">info@seva-store.com</div>
         </div>
       </a>
 

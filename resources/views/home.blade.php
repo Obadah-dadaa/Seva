@@ -335,8 +335,8 @@
       <div class="footer-col">
         <h4 data-i18n="footer.contact">تواصل معنا</h4>
         <div class="footer-contact">
-          <div>📞 01234567890</div>
-          <div>📧 info@seva.com</div>
+          <div>📞 01070156964</div>
+          <div>📧 info@seva-store.com</div>
           <div>📍 القاهرة، مصر</div>
         </div>
       </div>

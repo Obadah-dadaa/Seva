@@ -30,7 +30,7 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'seva_whatsapp' => env('SEVA_WHATSAPP_NUMBER', '201234567890'),
+    'seva_whatsapp' => env('SEVA_WHATSAPP_NUMBER', '201070156964'),
 
     'callmebot' => [
         'phone'  => env('CALLMEBOT_PHONE'),

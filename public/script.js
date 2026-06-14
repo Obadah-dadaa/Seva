@@ -500,7 +500,7 @@ const preorderProducts =
     ? window.SEVA_PREORDER_PRODUCTS
     : fallbackPreorderProducts;
 
-const whatsappNumber = window.SEVA_WHATSAPP_NUMBER || "201234567890";
+const whatsappNumber = window.SEVA_WHATSAPP_NUMBER || "201070156964";
 
 // ===== STATE =====
 let cart = [];
