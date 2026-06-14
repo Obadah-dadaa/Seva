@@ -2,6 +2,7 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/app/public/
 /vendor
 .env
 .env.backup
@@ -13,3 +14,7 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+
+# Uploaded media & large static assets
+/public/hero-source.png
+/public/seva-logo-transparent.png
