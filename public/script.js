@@ -647,6 +647,7 @@ function openPreorderWhatsApp(id) {
     product.type ? "النوع: " + product.type : "",
     product.priceNote ? "ملاحظة السعر: " + product.priceNote : "",
     product.estimatedDelivery ? "مدة التنفيذ: " + product.estimatedDelivery : "",
+    product.img ? "\n" + product.img : "",
   ]
     .filter(Boolean)
     .join("\n");
