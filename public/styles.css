@@ -222,6 +222,10 @@ body {
   direction: ltr;
 }
 
+html[dir="rtl"] .footer-logo-mark {
+  justify-content: flex-end;
+}
+
 .lang-btn {
   font-family: "Cairo", sans-serif;
   font-size: 12px;
