@@ -219,6 +219,7 @@ body {
   align-items: center;
   gap: 10px;
   margin-bottom: 14px;
+  direction: ltr;
 }
 
 .lang-btn {
