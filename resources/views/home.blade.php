@@ -306,7 +306,7 @@
   <div class="footer-inner">
     <div class="footer-grid">
       <div class="footer-brand">
-        <div class="footer-logo-mark">
+        <div class="footer-logo-mark" dir="ltr">
           <div class="footer-s-badge" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dim));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:var(--dark)">S</div>
           <span style="font-size:22px;font-weight:900;letter-spacing:6px;color:var(--white)">EVA</span>
         </div>
