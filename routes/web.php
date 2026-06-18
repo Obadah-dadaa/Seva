@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PreorderProductController;
+use App\Http\Controllers\Admin\ReturnPolicyController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\CustomerOrdersController;
 use App\Http\Controllers\HomeController;
@@ -32,7 +33,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/push/subscribe',   [PushController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
 });
-Route::view('/returns', 'pages.returns')->name('returns');
+Route::get('/returns', function () {
+    return view('pages.returns', ['policy' => \App\Models\ReturnPolicy::current()]);
+})->name('returns');
 Route::view('/contact', 'pages.contact')->name('contact');
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 Route::get('/track/{orderNumber}', [OrderController::class, 'track'])->name('orders.track');
@@ -61,5 +64,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('preorders', PreorderProductController::class)->except(['show']);
         Route::get('order-notifications', [AdminOrderController::class, 'notifications'])->name('orders.notifications');
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);
+        Route::get('return-policy', [ReturnPolicyController::class, 'edit'])->name('return-policy.edit');
+        Route::put('return-policy', [ReturnPolicyController::class, 'update'])->name('return-policy.update');
     });
 });

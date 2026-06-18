@@ -96,6 +96,7 @@
                     <a class="{{ request()->routeIs('admin.items.*') ? 'active' : '' }}" href="{{ route('admin.items.index') }}">المنتجات</a>
                     <a class="{{ request()->routeIs('admin.preorders.*') ? 'active' : '' }}" href="{{ route('admin.preorders.index') }}">التواصي</a>
                     <a class="{{ request()->routeIs('admin.categories.*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}">الفئات</a>
+                    <a class="{{ request()->routeIs('admin.return-policy.*') ? 'active' : '' }}" href="{{ route('admin.return-policy.edit') }}">سياسة الترجيع</a>
                     <form method="POST" action="{{ route('admin.logout') }}">@csrf<button type="submit">خروج</button></form>
                 @endauth
             </nav>

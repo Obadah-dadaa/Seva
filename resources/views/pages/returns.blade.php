@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>سياسة الاسترداد والتبديل — SEVA</title>
+<title>{{ $policy->title }} — SEVA</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -21,6 +21,7 @@
   .section-title .icon{font-size:1.1rem}
   ul{padding-right:20px;display:flex;flex-direction:column;gap:7px}
   ul li{font-size:.9rem;color:#444;line-height:1.7}
+  .section p{font-size:.9rem;color:#444;line-height:1.8}
   .note{background:#fffbf0;border:1.5px solid #f0d080;border-radius:12px;padding:14px 16px;font-size:.87rem;color:#7a5c00;font-weight:600;line-height:1.7}
   .back-btn{display:block;text-align:center;margin-top:24px;color:#b8860b;font-size:.88rem;font-weight:700;text-decoration:none}
   .back-btn:hover{text-decoration:underline}
@@ -36,45 +37,37 @@
   </div>
 
   <div class="card">
-    <div style="text-align:center"><span class="badge">خدمة العملاء</span></div>
-    <h1>سياسة الاسترداد والتبديل</h1>
-    <p class="subtitle">رضاكم غايتنا — نضمن لكم تجربة تسوق مريحة وآمنة</p>
+    @if($policy->badge)
+      <div style="text-align:center"><span class="badge">{{ $policy->badge }}</span></div>
+    @endif
+    <h1>{{ $policy->title }}</h1>
+    @if($policy->subtitle)
+      <p class="subtitle">{{ $policy->subtitle }}</p>
+    @endif
     <hr class="divider">
 
-    <div class="section">
-      <div class="section-title"><span class="icon">📅</span> مدة الاسترداد</div>
-      <p style="font-size:.9rem;color:#444;line-height:1.8">يحق لك طلب الاسترداد أو التبديل خلال <strong>14 يوماً</strong> من تاريخ استلام طلبك.</p>
-    </div>
+    @foreach($policy->sections ?? [] as $section)
+      <div class="section">
+        <div class="section-title">
+          @if(!empty($section['icon']))<span class="icon">{{ $section['icon'] }}</span>@endif
+          {{ $section['title'] ?? '' }}
+        </div>
+        @if(($section['type'] ?? 'paragraph') === 'list')
+          <ul>
+            @foreach(preg_split('/\r\n|\r|\n/', $section['body'] ?? '') as $line)
+              @if(trim($line) !== '')<li>{!! trim($line) !!}</li>@endif
+            @endforeach
+          </ul>
+        @else
+          <p>{!! nl2br($section['body'] ?? '') !!}</p>
+        @endif
+      </div>
+    @endforeach
 
-    <div class="section">
-      <div class="section-title"><span class="icon">✅</span> شروط الاسترداد</div>
-      <ul>
-        <li>المنتج في حالته الأصلية دون استخدام أو غسيل</li>
-        <li>البطاقات والعلامات التجارية لا تزال مرفقة</li>
-        <li>التغليف الأصلي محفوظ قدر الإمكان</li>
-        <li>رقم الطلب متاح للتحقق</li>
-      </ul>
-    </div>
-
-    <div class="section">
-      <div class="section-title"><span class="icon">🔄</span> كيفية طلب الاسترداد</div>
-      <ul>
-        <li>تواصل معنا عبر واتساب أو الهاتف</li>
-        <li>أذكر رقم طلبك والسبب</li>
-        <li>سنتواصل معك لترتيب استلام المنتج</li>
-      </ul>
-    </div>
-
-    <div class="section">
-      <div class="section-title"><span class="icon">💳</span> إعادة المبلغ</div>
-      <p style="font-size:.9rem;color:#444;line-height:1.8">يُعاد المبلغ بنفس طريقة الدفع الأصلية خلال <strong>3–5 أيام عمل</strong> من استلام المنتج والتحقق منه.</p>
-    </div>
-
-    <hr class="divider">
-
-    <div class="note">
-      <strong>⚠️ استثناءات —</strong> لا يشمل الاسترداد: المنتجات المفصّلة أو المخصصة حسب الطلب، وبعض الإكسسوارات لأسباب صحية. في حال الشك، تواصل معنا قبل الشراء.
-    </div>
+    @if($policy->note)
+      <hr class="divider">
+      <div class="note">{!! $policy->note !!}</div>
+    @endif
   </div>
 
   <a href="{{ route('home') }}" class="back-btn">← العودة للمتجر</a>
