@@ -175,9 +175,9 @@
       <div class="payment-area">
         <h3 data-i18n="pay.title">طرق الدفع المتاحة</h3>
         <div class="payment-methods">
-          <div class="payment-chip vf">فودافون كاش</div>
-          <div class="payment-chip or">أورانج كاش</div>
-          <div class="payment-chip ip">انستا باي</div>
+          <div class="payment-chip cod" data-i18n="checkout.cod">كاش عند الاستلام</div>
+          <div class="payment-chip vf" data-i18n="checkout.vodafone">فودافون كاش</div>
+          <div class="payment-chip ip" data-i18n="checkout.instapay">انستا باي</div>
         </div>
       </div>
     </div>

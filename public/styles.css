@@ -1136,11 +1136,11 @@ html[dir="ltr"] .preorder-info {
   color: var(--white);
 }
 
+.payment-chip.cod {
+  background: #2e8b57;
+}
 .payment-chip.vf {
   background: #c00;
-}
-.payment-chip.or {
-  background: #e67e22;
 }
 .payment-chip.ip {
   background: #7b2fbe;
