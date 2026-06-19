@@ -474,6 +474,14 @@ function resetPreorderSliders() {
 }
 
 // ===== POPULATE GRIDS =====
+// Hide a home-page section (header + grid) when it has no products to show.
+function toggleSectionByGrid(gridId, hasItems) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  const section = grid.closest("section");
+  if (section) section.style.display = hasItems ? "" : "none";
+}
+
 function populateGrids() {
   const all = products;
   const featured = products.filter((p) => p.featured);
@@ -503,6 +511,11 @@ function populateGrids() {
     .join("");
   renderPreorderGrid("homePreorderGrid", preorderProducts);
   renderPreorderGrid("allPreorderGrid", preorderProducts);
+
+  // Hide home-page sections that have no content to show.
+  toggleSectionByGrid("homeGrid", featured.length > 0);
+  toggleSectionByGrid("latestGrid", featured.length > 0);
+  toggleSectionByGrid("homePreorderGrid", preorderProducts.length > 0);
 }
 
 // ===== FILTER & SORT =====
