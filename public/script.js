@@ -485,6 +485,7 @@ function toggleSectionByGrid(gridId, hasItems) {
 function populateGrids() {
   const all = products;
   const featured = products.filter((p) => p.featured);
+  const latest = products.filter((p) => !p.featured);
   const abayas = products.filter((p) => p.cat === "عبايات");
   const women = products.filter((p) => p.cat === "ملابس نسائي");
   const men = products.filter((p) => p.cat === "ملابس رجالي");
@@ -494,7 +495,7 @@ function populateGrids() {
     .slice(0, 8)
     .map(renderCard)
     .join("");
-  document.getElementById("latestGrid").innerHTML = all
+  document.getElementById("latestGrid").innerHTML = latest
     .slice(0, 8)
     .map(renderCard)
     .join("");
@@ -514,7 +515,7 @@ function populateGrids() {
 
   // Hide home-page sections that have no content to show.
   toggleSectionByGrid("homeGrid", featured.length > 0);
-  toggleSectionByGrid("latestGrid", all.length > 0);
+  toggleSectionByGrid("latestGrid", latest.length > 0);
   toggleSectionByGrid("homePreorderGrid", preorderProducts.length > 0);
 }
 
