@@ -494,8 +494,8 @@ function populateGrids() {
     .slice(0, 8)
     .map(renderCard)
     .join("");
-  document.getElementById("latestGrid").innerHTML = featured
-    .slice(0, 4)
+  document.getElementById("latestGrid").innerHTML = all
+    .slice(0, 8)
     .map(renderCard)
     .join("");
   document.getElementById("allGrid").innerHTML = all.map(renderCard).join("");
@@ -514,7 +514,7 @@ function populateGrids() {
 
   // Hide home-page sections that have no content to show.
   toggleSectionByGrid("homeGrid", featured.length > 0);
-  toggleSectionByGrid("latestGrid", featured.length > 0);
+  toggleSectionByGrid("latestGrid", all.length > 0);
   toggleSectionByGrid("homePreorderGrid", preorderProducts.length > 0);
 }
 
