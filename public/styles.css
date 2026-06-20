@@ -1748,6 +1748,34 @@ html[dir="ltr"] .footer-brand p {
 .cart-item-remove:hover {
   color: var(--red);
 }
+.cart-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+}
+.cart-line-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cart-line-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+.cart-line-remove:hover {
+  color: var(--red);
+}
 
 .cart-footer {
   padding: 20px;

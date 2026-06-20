@@ -813,34 +813,46 @@ function updateCart() {
     itemsEl.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>${t["cart.empty"]}</p></div>`;
     footerEl.style.display = "none";
   } else {
-    // Group lines by product so the same item shows once, with a size breakdown.
+    // Group lines by product so the same item shows once; each size line is removable on its own.
     const groups = [];
     const groupIndex = {};
     cart.forEach((item) => {
       const key = String(item.id);
       if (groupIndex[key] === undefined) {
         groupIndex[key] = groups.length;
-        groups.push({ id: item.id, name: item.name, img: item.img, price: item.price, qty: 0, sizes: [] });
+        groups.push({ id: item.id, name: item.name, img: item.img, price: item.price, qty: 0, lines: [] });
       }
       const g = groups[groupIndex[key]];
       g.qty += item.qty;
-      if (item.size) g.sizes.push(item.size + "×" + item.qty);
+      g.lines.push({ size: item.size, qty: item.qty });
     });
 
     itemsEl.innerHTML = groups
-      .map(
-        (g) => `
+      .map((g) => {
+        const lines = g.lines
+          .map(
+            (line) => `
+          <div class="cart-line">
+            <span class="cart-line-meta">${line.size ? t["cart.size"] + ": " + line.size + " · " : ""}${t["cart.qty"]}: ${line.qty} — ${(g.price * line.qty).toLocaleString("ar-EG")} ${t["currency"]}</span>
+            <button class="cart-line-remove" type="button" onclick='removeCartLine(${jsString(g.id)}, ${jsString(line.size || "")})' aria-label="${t["modal.remove"]}">✕</button>
+          </div>`,
+          )
+          .join("");
+        const totalRow =
+          g.lines.length > 1
+            ? `<div class="cart-item-price">${t["cart.qty"]}: ${g.qty} · ${(g.price * g.qty).toLocaleString("ar-EG")} ${t["currency"]}</div>`
+            : "";
+        return `
       <div class="cart-item">
         <img class="cart-item-img" src="${g.img}" alt="${g.name}" onerror="handleImageError(this)">
         <div class="cart-item-info">
           <div class="cart-item-name">${g.name}</div>
-          <div class="cart-item-meta">${g.sizes.length ? t["cart.size"] + ": " + g.sizes.join(" · ") + " · " : ""}${t["cart.qty"]}: ${g.qty}</div>
-          <div class="cart-item-price">${(g.price * g.qty).toLocaleString("ar-EG")} ${t["currency"]}</div>
+          ${lines}
+          ${totalRow}
         </div>
-        <button class="cart-item-remove" type="button" onclick='removeCartProduct(${jsString(g.id)})' aria-label="${t["modal.remove"]}">✕</button>
       </div>
-    `,
-      )
+    `;
+      })
       .join("");
     const grandTotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
     document.getElementById("cartTotal").textContent =
@@ -852,8 +864,9 @@ function updateCart() {
   populateGrids();
 }
 
-function removeCartProduct(id) {
-  cart = cart.filter((c) => !sameId(c.id, id));
+function removeCartLine(id, size) {
+  const s = size || null;
+  cart = cart.filter((c) => !(sameId(c.id, id) && (c.size || null) === s));
   updateCart();
   showToast(i18n[currentLang]["toast.removed"]);
 }
