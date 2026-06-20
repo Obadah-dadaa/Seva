@@ -310,6 +310,22 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
+// A cart line is identified by product id AND size, so the same product can
+// be added in multiple sizes as separate lines.
+function findCartLine(id, size) {
+  return cart.find((c) => sameId(c.id, id) && (c.size || null) === (size || null));
+}
+
+// Refresh the modal add/remove button based on the currently selected size.
+function refreshModalAction() {
+  if (!currentProduct) return;
+  if (currentProduct.stock === 0) {
+    setModalActionState("hidden");
+    return;
+  }
+  setModalActionState(findCartLine(currentProduct.id, selectedSize) ? "remove" : "add");
+}
+
 function jsString(value) {
   return JSON.stringify(String(value));
 }
@@ -686,7 +702,7 @@ function openModal(id) {
 
   // Cart state / stock
   const outOfStockModal = p.stock === 0;
-  const inCart = cart.find((c) => sameId(c.id, p.id));
+  const inCart = findCartLine(p.id, selectedSize);
   const outOfStockEl = document.getElementById("modalOutOfStock");
   const qtyRow = document.querySelector(".modal-qty-row");
   if (outOfStockModal) {
@@ -709,6 +725,7 @@ function selectSize(btn, size) {
     .forEach((b) => b.classList.remove("selected"));
   btn.classList.add("selected");
   selectedSize = size;
+  refreshModalAction();
 }
 
 function switchModalImg(el) {
@@ -742,9 +759,13 @@ function changeQty(delta) {
 // ===== CART =====
 function addToCart() {
   if (!currentProduct) return;
-  const existing = cart.find((c) => sameId(c.id, currentProduct.id));
-  const requestedQty = currentQty + (existing ? existing.qty : 0);
-  if (requestedQty > currentProduct.stock) {
+  const existing = findCartLine(currentProduct.id, selectedSize);
+  // Stock is per product, so all sizes of this product share the same stock.
+  const productQtyInCart = cart.reduce(
+    (s, c) => s + (sameId(c.id, currentProduct.id) ? c.qty : 0),
+    0,
+  );
+  if (currentQty + productQtyInCart > currentProduct.stock) {
     showToast(i18n[currentLang]["toast.out_of_stock"]);
     return;
   }
@@ -761,7 +782,9 @@ function addToCart() {
 
 function removeFromCart() {
   if (!currentProduct) return;
-  cart = cart.filter((c) => !sameId(c.id, currentProduct.id));
+  cart = cart.filter(
+    (c) => !(sameId(c.id, currentProduct.id) && (c.size || null) === (selectedSize || null)),
+  );
   updateCart();
   setModalActionState("add");
   showToast(i18n[currentLang]["toast.removed"]);
@@ -792,7 +815,7 @@ function updateCart() {
   } else {
     itemsEl.innerHTML = cart
       .map(
-        (item) => `
+        (item, idx) => `
       <div class="cart-item">
         <img class="cart-item-img" src="${item.img}" alt="${item.name}" onerror="handleImageError(this)">
         <div class="cart-item-info">
@@ -800,7 +823,7 @@ function updateCart() {
           <div class="cart-item-meta">${item.size ? t["cart.size"] + ": " + item.size + " · " : ""}${t["cart.qty"]}: ${item.qty}</div>
           <div class="cart-item-price">${(item.price * item.qty).toLocaleString("ar-EG")} ${t["currency"]}</div>
         </div>
-        <button class="cart-item-remove" type="button" onclick='removeCartItem(${jsString(item.id)})' aria-label="${t["modal.remove"]}">✕</button>
+        <button class="cart-item-remove" type="button" onclick='removeCartItemAt(${idx})' aria-label="${t["modal.remove"]}">✕</button>
       </div>
     `,
       )
@@ -815,8 +838,8 @@ function updateCart() {
   populateGrids();
 }
 
-function removeCartItem(id) {
-  cart = cart.filter((c) => !sameId(c.id, id));
+function removeCartItemAt(index) {
+  cart.splice(index, 1);
   updateCart();
   showToast(i18n[currentLang]["toast.removed"]);
 }
