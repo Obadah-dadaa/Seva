@@ -81,14 +81,6 @@
         </select>
         <small>اضغط Ctrl لاختيار أكثر من مقاس.</small>
     </div>
-    <div class="form-field">
-        <label>المنشأ</label>
-        <input type="text" name="origin" value="{{ old('origin', $item->origin) }}" required>
-    </div>
-    <div class="form-field">
-        <label>الجودة / التفاصيل المختصرة</label>
-        <input type="text" name="quality" value="{{ old('quality', $item->quality) }}" required>
-    </div>
     <div class="form-field full">
         <label>الوصف</label>
         <textarea name="description" required>{{ old('description', $item->description) }}</textarea>

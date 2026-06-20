@@ -25,10 +25,6 @@
         <button class="nav-link active" onclick="showPage('home')" data-i18n="nav.home">الرئيسية</button>
         <button class="nav-link" onclick="showPage('products')" data-i18n="nav.products">المنتجات</button>
         <button class="nav-link" onclick="showPage('preorders')" data-i18n="nav.preorders">وصّيها لك</button>
-        <button class="nav-link" onclick="showPage('abayas')" data-i18n="nav.abayas">عبايات</button>
-        <button class="nav-link" onclick="showPage('women')" data-i18n="nav.women">ملابس نسائي</button>
-        <button class="nav-link" onclick="showPage('men')" data-i18n="nav.men">ملابس رجالي</button>
-        <button class="nav-link" onclick="showPage('accessories')" data-i18n="nav.accessories">اكسسوارات</button>
       </div>
     </div>
 

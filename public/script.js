@@ -686,9 +686,7 @@ function openModal(id) {
 
   // Features
   document.getElementById("modalFeatures").innerHTML = `
-    <div class="modal-feature"><span>${t["modal.feat.quality"]}</span><span>${p.quality}</span></div>
     <div class="modal-feature"><span>${t["modal.feat.material"]}</span><span>${p.material}</span></div>
-    <div class="modal-feature"><span>${t["modal.feat.origin"]}</span><span>${p.origin}</span></div>
   `;
 
   // Cart state / stock
