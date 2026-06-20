@@ -813,17 +813,31 @@ function updateCart() {
     itemsEl.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>${t["cart.empty"]}</p></div>`;
     footerEl.style.display = "none";
   } else {
-    itemsEl.innerHTML = cart
+    // Group lines by product so the same item shows once, with a size breakdown.
+    const groups = [];
+    const groupIndex = {};
+    cart.forEach((item) => {
+      const key = String(item.id);
+      if (groupIndex[key] === undefined) {
+        groupIndex[key] = groups.length;
+        groups.push({ id: item.id, name: item.name, img: item.img, price: item.price, qty: 0, sizes: [] });
+      }
+      const g = groups[groupIndex[key]];
+      g.qty += item.qty;
+      if (item.size) g.sizes.push(item.size + "×" + item.qty);
+    });
+
+    itemsEl.innerHTML = groups
       .map(
-        (item, idx) => `
+        (g) => `
       <div class="cart-item">
-        <img class="cart-item-img" src="${item.img}" alt="${item.name}" onerror="handleImageError(this)">
+        <img class="cart-item-img" src="${g.img}" alt="${g.name}" onerror="handleImageError(this)">
         <div class="cart-item-info">
-          <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-meta">${item.size ? t["cart.size"] + ": " + item.size + " · " : ""}${t["cart.qty"]}: ${item.qty}</div>
-          <div class="cart-item-price">${(item.price * item.qty).toLocaleString("ar-EG")} ${t["currency"]}</div>
+          <div class="cart-item-name">${g.name}</div>
+          <div class="cart-item-meta">${g.sizes.length ? t["cart.size"] + ": " + g.sizes.join(" · ") + " · " : ""}${t["cart.qty"]}: ${g.qty}</div>
+          <div class="cart-item-price">${(g.price * g.qty).toLocaleString("ar-EG")} ${t["currency"]}</div>
         </div>
-        <button class="cart-item-remove" type="button" onclick='removeCartItemAt(${idx})' aria-label="${t["modal.remove"]}">✕</button>
+        <button class="cart-item-remove" type="button" onclick='removeCartProduct(${jsString(g.id)})' aria-label="${t["modal.remove"]}">✕</button>
       </div>
     `,
       )
@@ -838,8 +852,8 @@ function updateCart() {
   populateGrids();
 }
 
-function removeCartItemAt(index) {
-  cart.splice(index, 1);
+function removeCartProduct(id) {
+  cart = cart.filter((c) => !sameId(c.id, id));
   updateCart();
   showToast(i18n[currentLang]["toast.removed"]);
 }
