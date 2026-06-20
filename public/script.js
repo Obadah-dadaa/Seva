@@ -485,10 +485,6 @@ function toggleSectionByGrid(gridId, hasItems) {
 function populateGrids() {
   const all = products;
   const featured = products.filter((p) => p.featured);
-  const abayas = products.filter((p) => p.cat === "عبايات");
-  const women = products.filter((p) => p.cat === "ملابس نسائي");
-  const men = products.filter((p) => p.cat === "ملابس رجالي");
-  const acc = products.filter((p) => p.cat === "اكسسوارات");
 
   document.getElementById("homeGrid").innerHTML = featured
     .slice(0, 8)
@@ -499,16 +495,6 @@ function populateGrids() {
     .map(renderCard)
     .join("");
   document.getElementById("allGrid").innerHTML = all.map(renderCard).join("");
-  document.getElementById("abayasGrid").innerHTML = abayas
-    .map(renderCard)
-    .join("");
-  document.getElementById("womenGrid").innerHTML = women
-    .map(renderCard)
-    .join("");
-  document.getElementById("menGrid").innerHTML = men.map(renderCard).join("");
-  document.getElementById("accessoriesGrid").innerHTML = acc
-    .map(renderCard)
-    .join("");
   renderPreorderGrid("homePreorderGrid", preorderProducts);
   renderPreorderGrid("allPreorderGrid", preorderProducts);
 
@@ -550,6 +536,19 @@ function setFilterCat(btn, cat) {
   activeFilterCat = cat;
   document.querySelectorAll('.filter-cat-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
+  applyFilters();
+}
+
+// Open the products page filtered by a category (used by dynamic nav/footer links).
+function showCategory(cat) {
+  showPage('products');
+  activeFilterCat = cat;
+  document.querySelectorAll('.filter-cat-btn').forEach(function(b) {
+    b.classList.toggle('active', b.textContent === cat);
+  });
+  document.querySelectorAll('.nav-link').forEach(function(l) {
+    l.classList.toggle('active', l.dataset.cat === cat);
+  });
   applyFilters();
 }
 
@@ -601,15 +600,7 @@ function showPage(pageId) {
   document
     .querySelectorAll(".nav-link")
     .forEach((l) => l.classList.remove("active"));
-  const map = {
-    home: 0,
-    products: 1,
-    preorders: 2,
-    abayas: 3,
-    women: 4,
-    men: 5,
-    accessories: 6,
-  };
+  const map = { home: 0, products: 1, preorders: 2 };
   const idx = map[pageId];
   const links = document.querySelectorAll(".nav-link");
   if (idx !== undefined && links[idx]) links[idx].classList.add("active");

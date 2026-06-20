@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Item;
 use App\Models\PreorderProduct;
 
@@ -59,8 +60,14 @@ class HomeController extends Controller
             $preorderProducts = collect();
         }
 
+        try {
+            $categories = Category::where('active', true)->orderBy('name')->pluck('name')->all();
+        } catch (\Throwable $exception) {
+            $categories = [];
+        }
+
         $whatsappNumber = preg_replace('/\D+/', '', config('services.seva_whatsapp', '201234567890'));
 
-        return view('home', compact('items', 'preorderProducts', 'whatsappNumber'));
+        return view('home', compact('items', 'preorderProducts', 'whatsappNumber', 'categories'));
     }
 }

@@ -25,6 +25,9 @@
         <button class="nav-link active" onclick="showPage('home')" data-i18n="nav.home">الرئيسية</button>
         <button class="nav-link" onclick="showPage('products')" data-i18n="nav.products">المنتجات</button>
         <button class="nav-link" onclick="showPage('preorders')" data-i18n="nav.preorders">وصّيها لك</button>
+        @foreach($categories as $cat)
+        <button class="nav-link" data-cat="{{ $cat }}" onclick="showCategory(this.dataset.cat)">{{ $cat }}</button>
+        @endforeach
       </div>
     </div>
 
@@ -245,60 +248,6 @@
 </div>
 
 <!-- ABAYAS PAGE -->
-<div class="page" id="page-abayas">
-  <div class="page-header">
-    <div class="page-header-inner">
-      <div class="breadcrumb"><span data-i18n="bc.home">الرئيسية</span> / <span data-i18n="page.abayas.crumb">عبايات</span></div>
-      <h1 data-i18n="page.abayas.title">عبايات فاخرة</h1>
-      <p data-i18n="page.abayas.desc">تصاميم عصرية تجمع الأصالة والأناقة</p>
-    </div>
-  </div>
-  <section class="products-section">
-    <div class="products-grid" id="abayasGrid"></div>
-  </section>
-</div>
-
-<!-- WOMEN PAGE -->
-<div class="page" id="page-women">
-  <div class="page-header">
-    <div class="page-header-inner">
-      <div class="breadcrumb"><span data-i18n="bc.home">الرئيسية</span> / <span data-i18n="page.women.crumb">ملابس نسائي</span></div>
-      <h1 data-i18n="page.women.title">ملابس نسائي</h1>
-      <p data-i18n="page.women.desc">أحدث صيحات الموضة النسائية</p>
-    </div>
-  </div>
-  <section class="products-section">
-    <div class="products-grid" id="womenGrid"></div>
-  </section>
-</div>
-
-<!-- MEN PAGE -->
-<div class="page" id="page-men">
-  <div class="page-header">
-    <div class="page-header-inner">
-      <div class="breadcrumb"><span data-i18n="bc.home">الرئيسية</span> / <span data-i18n="page.men.crumb">ملابس رجالي</span></div>
-      <h1 data-i18n="page.men.title">ملابس رجالي</h1>
-      <p data-i18n="page.men.desc">أناقة رجالية بلمسة عصرية</p>
-    </div>
-  </div>
-  <section class="products-section">
-    <div class="products-grid" id="menGrid"></div>
-  </section>
-</div>
-
-<!-- ACCESSORIES PAGE -->
-<div class="page" id="page-accessories">
-  <div class="accessories-hero">
-    <div class="accessories-hero-inner">
-      <h1 data-i18n="page.acc.title">✦ اكسسوارات فاخرة</h1>
-      <p data-i18n="page.acc.desc">إضافات تكمل إطلالتك بأناقة لا مثيل لها</p>
-    </div>
-  </div>
-  <section class="products-section">
-    <div class="products-grid" id="accessoriesGrid"></div>
-  </section>
-</div>
-
 <!-- FOOTER (repeated for all pages via JS) -->
 <footer id="mainFooter">
   <div class="footer-inner">
@@ -316,6 +265,9 @@
           <li><button onclick="showPage('home')" data-i18n="nav.home">الرئيسية</button></li>
           <li><button onclick="showPage('products')" data-i18n="nav.products">المنتجات</button></li>
           <li><button onclick="showPage('preorders')" data-i18n="nav.preorders">وصّيها لك</button></li>
+          @foreach($categories as $cat)
+          <li><button data-cat="{{ $cat }}" onclick="showCategory(this.dataset.cat)">{{ $cat }}</button></li>
+          @endforeach
         </ul>
       </div>
       <div class="footer-col">
