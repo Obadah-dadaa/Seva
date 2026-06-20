@@ -13,6 +13,8 @@ const i18n = {
     "nav.login": "تسجيل دخول",
     "nav.myorders": "طلباتي",
     "nav.logout": "تسجيل خروج",
+    "notif.title": "إشعارات طلباتي",
+    "notif.empty": "لا توجد إشعارات بعد",
     "hero.badge": "✦ مجموعة جديدة ٢٠٢٦",
     "hero.title": "أناقة<br>بلا حدود",
     "hero.subtitle": "Elegance Without Limits",
@@ -137,6 +139,8 @@ const i18n = {
     "nav.login": "Sign In",
     "nav.myorders": "My Orders",
     "nav.logout": "Sign Out",
+    "notif.title": "My Order Updates",
+    "notif.empty": "No notifications yet",
     "hero.badge": "✦ New Collection 2026",
     "hero.title": "Elegance<br>Without Limits",
     "hero.subtitle": "أناقة بلا حدود",
@@ -1166,3 +1170,148 @@ if (window.SEVA_LOGGED_IN) {
     }
   } catch(e) {}
 }
+
+// ===== CUSTOMER ORDER NOTIFICATIONS (visible + sound + live) =====
+(function () {
+  if (!window.SEVA_LOGGED_IN || !window.SEVA_NOTIFICATIONS_URL) return;
+
+  var badge    = document.getElementById('notifBadge');
+  var listEl   = document.getElementById('notifList');
+  var wrap     = document.getElementById('notifWrap');
+  var dropdown = document.getElementById('notifDropdown');
+  if (!wrap) return;
+
+  var lastSeenId = 0;
+  var firstPoll  = true;
+  var audioCtx   = null;
+  var soundReady = false;
+  var originalTitle = document.title;
+  var titleTimer = null;
+
+  // Browsers block autoplay — unlock audio on the first user gesture.
+  function initAudio() {
+    if (soundReady) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx.resume();
+      soundReady = true;
+    } catch (e) {}
+  }
+  document.addEventListener('click', initAudio, { once: true });
+  document.addEventListener('touchstart', initAudio, { once: true });
+
+  function chime() {
+    if (!soundReady || !audioCtx) return;
+    try {
+      [{ f: 880, s: 0 }, { f: 1108.73, s: 0.18 }, { f: 1318.51, s: 0.36 }].forEach(function (n) {
+        var o = audioCtx.createOscillator();
+        var g = audioCtx.createGain();
+        var st = audioCtx.currentTime + n.s;
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(n.f, st);
+        g.gain.setValueAtTime(0.001, st);
+        g.gain.exponentialRampToValueAtTime(0.5, st + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, st + 0.32);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(st); o.stop(st + 0.34);
+      });
+    } catch (e) {}
+  }
+
+  function flashTitle(msg) {
+    clearTimeout(titleTimer);
+    var on = true;
+    (function tick() {
+      document.title = on ? ('🔔 ' + msg) : originalTitle;
+      on = !on;
+      titleTimer = setTimeout(tick, 800);
+    })();
+    setTimeout(function () { clearTimeout(titleTimer); document.title = originalTitle; }, 12000);
+  }
+
+  function setBadge(count) {
+    if (!badge) return;
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function renderList(items) {
+    if (!listEl) return;
+    if (!items || !items.length) {
+      listEl.innerHTML = '<div class="notif-empty">' + esc(i18n[currentLang]['notif.empty']) + '</div>';
+      return;
+    }
+    listEl.innerHTML = items.map(function (it) {
+      var cls  = 'notif-item' + (it.unread ? ' unread' : '');
+      var attr = it.track_url ? ' data-href="' + esc(it.track_url) + '"' : '';
+      return '<div class="' + cls + '"' + attr + '>' +
+        '<span class="notif-item-icon">' + esc(it.icon || '•') + '</span>' +
+        '<div class="notif-item-body">' +
+          '<div class="notif-item-msg">' + esc(it.message) + '</div>' +
+          '<div class="notif-item-meta">' + esc(it.order_number) + ' · ' + esc(it.time) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    listEl.querySelectorAll('.notif-item[data-href]').forEach(function (el) {
+      el.addEventListener('click', function () { window.location.href = el.dataset.href; });
+    });
+  }
+
+  function poll() {
+    fetch(window.SEVA_NOTIFICATIONS_URL, { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data) return;
+        setBadge(data.count || 0);
+        renderList(data.items);
+
+        if (!data.latest_id) { firstPoll = false; return; }
+        if (firstPoll) { lastSeenId = data.latest_id; firstPoll = false; return; }
+
+        if (data.latest_id > lastSeenId) {
+          lastSeenId = data.latest_id;
+          chime();
+          if (data.latest) {
+            showToast((data.latest.icon || '🔔') + ' ' + data.latest.message);
+            flashTitle(data.latest.message);
+          }
+        }
+      })
+      .catch(function () {});
+  }
+
+  window.toggleNotifications = function () {
+    initAudio();
+    if (!dropdown) return;
+    var open = dropdown.classList.toggle('open');
+    if (open) {
+      var meta = document.querySelector('meta[name="csrf-token"]');
+      fetch(window.SEVA_NOTIFICATIONS_SEEN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': meta ? meta.content : '',
+        },
+      }).then(function () { setBadge(0); setTimeout(poll, 600); }).catch(function () {});
+    }
+  };
+
+  document.addEventListener('click', function (e) {
+    if (dropdown && dropdown.classList.contains('open') && !wrap.contains(e.target)) {
+      dropdown.classList.remove('open');
+    }
+  });
+
+  poll();
+  setInterval(poll, 12000);
+}());

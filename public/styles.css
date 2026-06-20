@@ -340,6 +340,110 @@ body {
   justify-content: center;
 }
 
+/* ====== ORDER NOTIFICATIONS ====== */
+.notif-wrap {
+  position: relative;
+}
+.notif-btn {
+  position: relative;
+  color: rgba(255, 255, 255, 0.7);
+}
+.notif-btn.active,
+.notif-btn:hover {
+  color: var(--gold-light);
+  background: rgba(201, 168, 76, 0.12);
+}
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.notif-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 320px;
+  max-width: 86vw;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: #1e1c18;
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  border-radius: 14px;
+  padding: 6px;
+  z-index: 320;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.15s ease;
+}
+.notif-dropdown.open {
+  display: block;
+}
+.notif-head {
+  padding: 10px 12px 8px;
+  font: 800 0.92rem Cairo, sans-serif;
+  color: var(--gold-light);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 4px;
+  direction: rtl;
+  text-align: right;
+}
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.notif-empty {
+  padding: 22px 12px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+  font: 600 0.85rem Cairo, sans-serif;
+}
+.notif-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  direction: rtl;
+  text-align: right;
+  transition: background 0.15s;
+}
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.notif-item.unread {
+  background: rgba(201, 168, 76, 0.1);
+}
+.notif-item-icon {
+  font-size: 1.1rem;
+  flex: 0 0 auto;
+  line-height: 1.5;
+}
+.notif-item-body {
+  min-width: 0;
+}
+.notif-item-msg {
+  color: #fff;
+  font: 700 0.86rem Cairo, sans-serif;
+  margin-bottom: 2px;
+}
+.notif-item-meta {
+  color: rgba(255, 255, 255, 0.5);
+  font: 500 0.72rem Cairo, sans-serif;
+}
+
 /* ====== PAGES ====== */
 .page {
   display: none;

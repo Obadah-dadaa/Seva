@@ -23,6 +23,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'is_admin',
+        'notifications_seen_at',
     ];
 
     public function orders()
@@ -48,5 +49,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
+        'notifications_seen_at' => 'datetime',
     ];
 }

@@ -60,6 +60,22 @@
           </a>
         @endauth
       </div>
+      @auth
+      @if(!auth()->user()->is_admin)
+      <div class="notif-wrap" id="notifWrap">
+        <button class="icon-btn notif-btn" onclick="toggleNotifications()" title="الإشعارات" aria-label="الإشعارات">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-head" data-i18n="notif.title">إشعارات طلباتي</div>
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty" data-i18n="notif.empty">لا توجد إشعارات بعد</div>
+          </div>
+        </div>
+      </div>
+      @endif
+      @endauth
       <button class="icon-btn lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
       <button class="icon-btn nav-search-btn" onclick="toggleSearch()" data-i18n-title="nav.search.title" title="بحث">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -451,6 +467,8 @@
   window.SEVA_TRACK_BASE_URL = @json(url('/track'));
   window.SEVA_LOGGED_IN     = @json(auth()->check() && auth()->user() && !auth()->user()->is_admin);
   window.SEVA_LOGIN_URL     = @json(route('login'));
+  window.SEVA_NOTIFICATIONS_URL      = @json(route('customer.notifications'));
+  window.SEVA_NOTIFICATIONS_SEEN_URL = @json(route('customer.notifications.seen'));
   window.SEVA_FLASH         = @json(session('seva_toast'));
   window.SEVA_PLACEHOLDER_IMAGE = @json(asset('seva-logo-transparent.png'));
 </script>

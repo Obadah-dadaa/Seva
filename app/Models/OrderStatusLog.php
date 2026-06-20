@@ -12,6 +12,26 @@ class OrderStatusLog extends Model
 
     protected $casts = ['created_at' => 'datetime'];
 
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * Customer-facing message for this status update.
+     */
+    public function getCustomerMessageAttribute(): string
+    {
+        return [
+            'pending_payment' => 'طلبك بانتظار تأكيد الدفع',
+            'new'             => 'تم تسجيل طلبك بنجاح',
+            'reviewed'        => 'تمت مراجعة طلبك',
+            'completed'       => 'طلبك في الطريق إليك 🚚',
+            'delivered'       => 'تم تسليم طلبك ✅',
+            'cancelled'       => 'تم إلغاء طلبك',
+        ][$this->status] ?? 'تحديث على طلبك';
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return [

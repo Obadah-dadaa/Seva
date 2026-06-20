@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PreorderProductController;
 use App\Http\Controllers\Admin\ReturnPolicyController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\CustomerNotificationsController;
 use App\Http\Controllers\CustomerOrdersController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
@@ -50,6 +51,8 @@ Route::post('/logout',  [CustomerAuthController::class, 'logout'])->name('custom
 // Customer portal
 Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [CustomerOrdersController::class, 'index'])->name('customer.orders');
+    Route::get('/my-notifications', [CustomerNotificationsController::class, 'index'])->name('customer.notifications');
+    Route::post('/my-notifications/seen', [CustomerNotificationsController::class, 'markSeen'])->name('customer.notifications.seen');
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {
