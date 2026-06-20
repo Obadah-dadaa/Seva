@@ -316,9 +316,6 @@
           <li><button onclick="showPage('home')" data-i18n="nav.home">الرئيسية</button></li>
           <li><button onclick="showPage('products')" data-i18n="nav.products">المنتجات</button></li>
           <li><button onclick="showPage('preorders')" data-i18n="nav.preorders">وصّيها لك</button></li>
-          <li><button onclick="showPage('abayas')" data-i18n="nav.abayas">عبايات</button></li>
-          <li><button onclick="showPage('women')" data-i18n="nav.women">ملابس نسائي</button></li>
-          <li><button onclick="showPage('men')" data-i18n="nav.men">ملابس رجالي</button></li>
         </ul>
       </div>
       <div class="footer-col">
