@@ -319,11 +319,7 @@ function findCartLine(id, size) {
 // Refresh the modal add/remove button based on the currently selected size.
 function refreshModalAction() {
   if (!currentProduct) return;
-  if (currentProduct.stock === 0) {
-    setModalActionState("hidden");
-    return;
-  }
-  setModalActionState(findCartLine(currentProduct.id, selectedSize) ? "remove" : "add");
+  setModalActionState(currentProduct.stock === 0 ? "hidden" : "add");
 }
 
 function jsString(value) {
@@ -702,7 +698,6 @@ function openModal(id) {
 
   // Cart state / stock
   const outOfStockModal = p.stock === 0;
-  const inCart = findCartLine(p.id, selectedSize);
   const outOfStockEl = document.getElementById("modalOutOfStock");
   const qtyRow = document.querySelector(".modal-qty-row");
   if (outOfStockModal) {
@@ -712,7 +707,8 @@ function openModal(id) {
   } else {
     if (outOfStockEl) outOfStockEl.style.display = "none";
     if (qtyRow) qtyRow.style.display = "";
-    setModalActionState(inCart ? "remove" : "add");
+    // Always allow adding — re-adding the same size accumulates its quantity.
+    setModalActionState("add");
   }
 
   document.getElementById("productModal").classList.add("open");
@@ -726,6 +722,26 @@ function selectSize(btn, size) {
   btn.classList.add("selected");
   selectedSize = size;
   refreshModalAction();
+}
+
+// ===== IMAGE LIGHTBOX (full-screen preview) =====
+function openImageLightbox(src) {
+  if (!src) return;
+  var box = document.getElementById("imgLightbox");
+  var img = document.getElementById("imgLightboxImg");
+  if (!box || !img) return;
+  img.src = src;
+  box.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeImageLightbox() {
+  var box = document.getElementById("imgLightbox");
+  if (box) box.classList.remove("open");
+  var modal = document.getElementById("productModal");
+  // Keep the scroll lock if the product modal is still open behind it.
+  document.body.style.overflow =
+    modal && modal.classList.contains("open") ? "hidden" : "";
 }
 
 function switchModalImg(el) {
@@ -775,7 +791,7 @@ function addToCart() {
     cart.push({ ...currentProduct, qty: currentQty, size: selectedSize });
   }
   updateCart();
-  setModalActionState("remove");
+  setModalActionState("add");
   showToast(i18n[currentLang]["toast.added"]);
   closeModalDirect();
 }

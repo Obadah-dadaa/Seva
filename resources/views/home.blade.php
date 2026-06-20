@@ -310,7 +310,7 @@
 <div class="modal-backdrop" id="productModal" onclick="closeModal(event)">
   <div class="modal-box" id="modalBox">
     <div class="modal-imgs" id="modalImgs">
-      <img id="modalImg" src="" alt="">
+      <img id="modalImg" src="" alt="" onclick="openImageLightbox(this.src)" title="اضغط للتكبير">
       <span class="modal-badge-discount" id="modalDiscBadge" style="display:none"></span>
       <div id="modalGallery" style="display:none;"></div>
     </div>
@@ -357,6 +357,12 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- ====== IMAGE LIGHTBOX ====== -->
+<div class="img-lightbox" id="imgLightbox" onclick="closeImageLightbox()">
+  <button class="img-lightbox-close" onclick="closeImageLightbox()" aria-label="إغلاق">✕</button>
+  <img id="imgLightboxImg" src="" alt="">
 </div>
 
 <!-- ====== CART SIDEBAR ====== -->
