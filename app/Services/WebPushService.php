@@ -25,14 +25,19 @@ class WebPushService
 
     public function notifyAllAdmins(): void
     {
-        if (!$this->isConfigured()) {
-            return;
+        if (!$this->isConfigured()) return;
+
+        $subscriptions = PushSubscription::whereHas('user', fn($q) => $q->where('is_admin', true))->get();
+        foreach ($subscriptions as $sub) {
+            $this->sendPing($sub);
         }
+    }
 
-        $subscriptions = PushSubscription::whereHas('user', function ($q) {
-            $q->where('is_admin', true);
-        })->get();
+    public function notifyUser(int $userId, string $title, string $body, string $url = '/'): void
+    {
+        if (!$this->isConfigured()) return;
 
+        $subscriptions = PushSubscription::where('user_id', $userId)->get();
         foreach ($subscriptions as $sub) {
             $this->sendPing($sub);
         }

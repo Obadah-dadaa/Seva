@@ -477,6 +477,8 @@
   window.SEVA_NOTIFICATIONS_SEEN_URL = @json(route('customer.notifications.seen'));
   window.SEVA_FLASH         = @json(session('seva_toast'));
   window.SEVA_PLACEHOLDER_IMAGE = @json(asset('seva-logo-transparent.png'));
+  window.SEVA_VAPID_PUBLIC_KEY  = @json(env('VAPID_PUBLIC_KEY', ''));
+  window.SEVA_PUSH_SUBSCRIBE_URL = @json(route('push.subscribe'));
 </script>
 <script src="{{ asset('script.js') }}"></script>
 </body>

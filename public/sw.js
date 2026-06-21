@@ -1,17 +1,31 @@
-// SEVA Admin Service Worker — Web Push handler
+// SEVA Service Worker — Web Push handler (admin + customer)
 self.addEventListener('push', function(event) {
+    // Try to parse payload first (customer notifications carry data directly)
+    var payload = null;
+    try { payload = event.data ? event.data.json() : null; } catch(e) {}
+
+    if (payload && payload.title) {
+        // Customer notification — use payload directly
+        event.waitUntil(
+            self.registration.showNotification(payload.title, {
+                body: payload.body || '',
+                icon: '/seva-logo-transparent.png',
+                badge: '/seva-logo-transparent.png',
+                tag: payload.tag || 'seva-notif',
+                requireInteraction: true,
+                data: { url: payload.url || '/' },
+                vibrate: [200, 100, 200, 100, 400],
+            })
+        );
+        return;
+    }
+
+    // Admin notification — fetch latest order details
     event.waitUntil(
         fetch('/push/latest', { credentials: 'include' })
             .then(function(r) { return r.ok ? r.json() : null; })
             .then(function(data) {
-                if (!data) {
-                    data = {
-                        title: '🛍️ طلب جديد — SEVA',
-                        body: 'تم استلام طلب جديد',
-                        url: '/admin/orders',
-                        tag: 'seva-new-order',
-                    };
-                }
+                if (!data) data = { title: '🛍️ طلب جديد — SEVA', body: 'تم استلام طلب جديد', url: '/admin/orders', tag: 'seva-new-order' };
                 return self.registration.showNotification(data.title, {
                     body: data.body,
                     icon: '/seva-logo-transparent.png',

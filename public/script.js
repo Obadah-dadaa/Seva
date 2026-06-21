@@ -1381,3 +1381,45 @@ if (window.SEVA_LOGGED_IN) {
   poll();
   setInterval(poll, 12000);
 }());
+
+// ===== CUSTOMER PUSH SUBSCRIPTION =====
+(function () {
+  if (!window.SEVA_LOGGED_IN) return;
+  var vapidKey = window.SEVA_VAPID_PUBLIC_KEY;
+  var subscribeUrl = window.SEVA_PUSH_SUBSCRIBE_URL;
+  if (!vapidKey || !subscribeUrl) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  function b64u(b64) {
+    var pad = '='.repeat((4 - b64.length % 4) % 4);
+    var raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  }
+
+  function doSubscribe(reg) {
+    reg.pushManager.getSubscription().then(function (existing) {
+      var sub = existing;
+      var doSend = function (s) {
+        var j = s.toJSON();
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        fetch(subscribeUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': meta ? meta.content : '' },
+          body: JSON.stringify({ endpoint: j.endpoint, p256dh: j.keys && j.keys.p256dh, auth: j.keys && j.keys.auth }),
+        }).catch(function () {});
+      };
+      if (sub) { doSend(sub); return; }
+      Notification.requestPermission().then(function (perm) {
+        if (perm !== 'granted') return;
+        reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(vapidKey) })
+          .then(doSend).catch(function () {});
+      });
+    });
+  }
+
+  navigator.serviceWorker.register('/sw.js').then(function (reg) {
+    doSubscribe(reg);
+  }).catch(function () {});
+}());

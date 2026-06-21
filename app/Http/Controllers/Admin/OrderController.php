@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\WebPushService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -51,6 +52,18 @@ class OrderController extends Controller
         ]);
 
         $order->statusLogs()->create(['status' => $data['status'], 'created_at' => now()]);
+
+        // Push notification to the customer
+        if ($order->user_id) {
+            try {
+                (new WebPushService())->notifyUser(
+                    $order->user_id,
+                    '📦 تحديث طلبك — SEVA',
+                    'طلب ' . $order->order_number . ': ' . $order->status_label,
+                    url('/track/' . $order->order_number),
+                );
+            } catch (\Throwable $e) {}
+        }
 
         return back()->with('success', 'تم تحديث حالة الطلب.');
     }
