@@ -54,10 +54,10 @@ class OrderController extends Controller
         $order->statusLogs()->create(['status' => $data['status'], 'created_at' => now()]);
 
         // Push notification to the customer
-        if ($order->user_id) {
+        if ($order->customer_id) {
             try {
                 (new WebPushService())->notifyUser(
-                    $order->user_id,
+                    $order->customer_id,
                     '📦 تحديث طلبك — SEVA',
                     'طلب ' . $order->order_number . ': ' . $order->status_label,
                     url('/track/' . $order->order_number),

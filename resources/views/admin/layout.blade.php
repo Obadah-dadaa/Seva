@@ -182,9 +182,7 @@
                 updateSoundBtn(enabling);
                 if (enabling) {
                     playChime(1);
-                    if ('Notification' in window && Notification.permission === 'default') {
-                        Notification.requestPermission();
-                    }
+                    registerWebPush(); // request permission + subscribe
                 }
             });
         } catch(e) {}

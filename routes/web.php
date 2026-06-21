@@ -29,7 +29,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Web Push
-Route::get('/push/latest', [PushController::class, 'latest'])->name('push.latest');
+Route::get('/push/latest',      [PushController::class, 'latest'])->name('push.latest');
+Route::get('/push/user-latest', [PushController::class, 'userLatest'])->name('push.user-latest');
 Route::middleware('auth')->group(function () {
     Route::post('/push/subscribe',   [PushController::class, 'subscribe'])->name('push.subscribe');
     Route::post('/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');

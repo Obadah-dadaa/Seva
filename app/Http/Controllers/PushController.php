@@ -41,7 +41,31 @@ class PushController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    // Service Worker fetches this after receiving a push ping
+    // User's SW fetches this after receiving a ping — returns their latest order status
+    public function userLatest()
+    {
+        if (!Auth::check() || Auth::user()->is_admin) {
+            return response()->json(null);
+        }
+
+        $order = \App\Models\Order::where('customer_id', Auth::id())
+            ->whereNotIn('status', ['new', 'pending_payment'])
+            ->latest('updated_at')
+            ->first();
+
+        if (!$order) {
+            return response()->json(null);
+        }
+
+        return response()->json([
+            'title' => '📦 تحديث طلبك — SEVA',
+            'body'  => 'طلب ' . $order->order_number . ': ' . $order->status_label,
+            'url'   => route('orders.track', $order->order_number),
+            'tag'   => 'seva-order-' . $order->id . '-' . $order->status,
+        ]);
+    }
+
+    // Admin/Service Worker fetches this after receiving a push ping
     public function latest()
     {
         $order = \App\Models\Order::whereIn('status', ['new', 'pending_payment'])
