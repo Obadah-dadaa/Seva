@@ -144,27 +144,50 @@
     var lastNotifiedId = 0;
     var firstPoll = true;
     var audioCtx = null;
-    var soundEnabled = false;
+    var soundEnabled = localStorage.getItem('seva_admin_sound') === '1';
     var titleTimer = null;
 
-    // ── Sound enable button ───────────────────────────────────────────
-    window.enableAdminSound = function() {
-        try {
-            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            audioCtx.resume().then(function() {
-                soundEnabled = true;
-                if (soundBtn) {
-                    soundBtn.style.background = 'linear-gradient(135deg,#c9a84c,#8b6a2e)';
-                    soundBtn.style.color = '#1a1000';
-                    soundBtn.title = 'الصوت مفعّل';
-                }
-                if (mutedEl) mutedEl.style.display = 'none';
-                playChime(1); // test beep to confirm
-            });
-        } catch(e) {}
+    // ── UI helper ─────────────────────────────────────────────────────
+    function updateSoundBtn(enabled) {
+        if (soundBtn) {
+            soundBtn.style.background = enabled ? 'linear-gradient(135deg,#c9a84c,#8b6a2e)' : 'rgba(201,168,76,.12)';
+            soundBtn.style.color      = enabled ? '#1a1000' : '#c9a84c';
+            soundBtn.title            = enabled ? 'الصوت مفعّل — انقر للإيقاف' : 'انقر لتفعيل الصوت والإشعارات';
+        }
+        if (mutedEl) mutedEl.style.display = enabled ? 'none' : '';
+    }
+
+    // ── Restore saved state on load ───────────────────────────────────
+    if (soundEnabled) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { soundEnabled = false; }
+        updateSoundBtn(soundEnabled);
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
+    }
+
+    // Resume suspended AudioContext on first user gesture (browser policy)
+    document.addEventListener('click', function() {
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }, true);
+
+    // ── Sound toggle button ───────────────────────────────────────────
+    window.enableAdminSound = function() {
+        var enabling = !soundEnabled;
+        try {
+            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            audioCtx.resume().then(function() {
+                soundEnabled = enabling;
+                localStorage.setItem('seva_admin_sound', enabling ? '1' : '0');
+                updateSoundBtn(enabling);
+                if (enabling) {
+                    playChime(1);
+                    if ('Notification' in window && Notification.permission === 'default') {
+                        Notification.requestPermission();
+                    }
+                }
+            });
+        } catch(e) {}
     };
 
     // ── Chime ─────────────────────────────────────────────────────────
