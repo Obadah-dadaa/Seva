@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Color;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,14 +16,6 @@ class ItemController extends Controller
         '28', '30', '32', '34', '36', '38', '40', '42', '44', '46',
         '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45',
         'One Size',
-    ];
-
-    private const COLORS = [
-        'أسود', 'أبيض', 'أوف وايت', 'سكري', 'بيج', 'رمادي', 'فضي',
-        'ذهبي', 'بني', 'جملي', 'كحلي', 'أزرق', 'سماوي', 'تركواز',
-        'أخضر', 'زيتي', 'نعناعي', 'أصفر', 'خردلي', 'برتقالي',
-        'أحمر', 'عنابي', 'وردي', 'فوشيا', 'بنفسجي', 'ليلكي',
-        'موف', 'خوخي', 'نحاسي', 'شفاف', 'متعدد الألوان',
     ];
 
     /**
@@ -48,7 +41,7 @@ class ItemController extends Controller
             'item' => new Item(),
             'categories' => Category::where('active', true)->orderBy('name')->get(),
             'sizes' => self::SIZES,
-            'colors' => self::COLORS,
+            'colors' => Color::orderBy('name')->pluck('name'),
             'variantStock' => [],
         ]);
     }
@@ -118,7 +111,7 @@ class ItemController extends Controller
             'item' => $item,
             'categories' => Category::orderBy('name')->get(),
             'sizes' => self::SIZES,
-            'colors' => self::COLORS,
+            'colors' => Color::orderBy('name')->pluck('name'),
             'variantStock' => $variantStock,
         ]);
     }

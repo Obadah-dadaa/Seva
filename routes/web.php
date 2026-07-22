@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -65,6 +66,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('categories', CategoryController::class)->except(['show']);
         Route::resource('items', ItemController::class)->except(['show']);
+        Route::post('colors', [ColorController::class, 'store'])->name('colors.store');
         Route::resource('preorders', PreorderProductController::class)->except(['show']);
         Route::get('order-notifications', [AdminOrderController::class, 'notifications'])->name('orders.notifications');
         Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);

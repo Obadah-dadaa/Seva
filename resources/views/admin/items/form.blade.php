@@ -73,6 +73,11 @@
             @endforeach
         </select>
         <small>اضغط Ctrl لاختيار أكثر من لون.</small>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+            <input type="text" id="newColorInput" placeholder="إضافة لون جديد" style="flex:1;">
+            <button type="button" class="btn-admin" id="addColorBtn">إضافة</button>
+        </div>
+        <small id="newColorError" style="color:#c0392b;display:none;"></small>
     </div>
     <div class="form-field">
         <label>المقاسات</label>
@@ -172,5 +177,63 @@ function toggleGalleryDelete(id) {
     document.getElementById('colorsSelect').addEventListener('change', rebuildVariantTable);
     document.getElementById('sizesSelect').addEventListener('change', rebuildVariantTable);
     rebuildVariantTable();
+})();
+
+// ===== Add a new color inline =====
+(function () {
+    var btn = document.getElementById('addColorBtn');
+    var input = document.getElementById('newColorInput');
+    var errorEl = document.getElementById('newColorError');
+    var select = document.getElementById('colorsSelect');
+    if (!btn || !input || !select) return;
+
+    function showError(message) {
+        errorEl.textContent = message;
+        errorEl.style.display = '';
+    }
+
+    btn.addEventListener('click', function () {
+        var name = input.value.trim();
+        errorEl.style.display = 'none';
+        if (!name) return;
+
+        btn.disabled = true;
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        fetch(@json(route('admin.colors.store')), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({ name: name }),
+        })
+            .then(function (res) {
+                return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+            })
+            .then(function (result) {
+                if (!result.ok) {
+                    var message = (result.data.errors && result.data.errors.name && result.data.errors.name[0]) ||
+                        result.data.message || 'تعذّرت إضافة اللون.';
+                    showError(message);
+                    return;
+                }
+
+                var option = document.createElement('option');
+                option.value = result.data.name;
+                option.textContent = result.data.name;
+                option.selected = true;
+                select.appendChild(option);
+                select.dispatchEvent(new Event('change'));
+                input.value = '';
+            })
+            .catch(function () {
+                showError('تعذّرت إضافة اللون، حاول مرة أخرى.');
+            })
+            .finally(function () {
+                btn.disabled = false;
+            });
+    });
 })();
 </script>
