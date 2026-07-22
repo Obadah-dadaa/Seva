@@ -1541,6 +1541,11 @@ html[dir="ltr"] .footer-brand p {
   color: var(--gold-dim);
 }
 
+.modal-size-btn.option-unavailable {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
 .modal-qty-row {
   display: flex;
   align-items: center;

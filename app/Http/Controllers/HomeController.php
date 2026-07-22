@@ -11,7 +11,7 @@ class HomeController extends Controller
     public function index()
     {
         try {
-            $items = Item::with(['category', 'images'])
+            $items = Item::with(['category', 'images', 'variants'])
                 ->where('active', true)
                 ->latest()
                 ->get()
@@ -28,6 +28,13 @@ class HomeController extends Controller
                         'discount' => $item->discount,
                         'sizes' => $item->sizes ?: [],
                         'colors' => $item->colors ?: [],
+                        'variants' => $item->variants->map(function ($variant) {
+                            return [
+                                'color' => $variant->color,
+                                'size' => $variant->size,
+                                'stock' => (int) $variant->stock,
+                            ];
+                        })->values()->all(),
                         'quality' => $item->quality ?: '',
                         'material' => $item->material ?: '',
                         'origin' => $item->origin ?: '',

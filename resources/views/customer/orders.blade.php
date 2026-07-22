@@ -114,7 +114,7 @@
       @if($order->items->isNotEmpty())
       <div class="order-items-preview">
         @foreach($order->items->take(3) as $item)
-          <span class="item-chip">{{ $item->product_name }}{{ $item->size ? ' / '.$item->size : '' }}</span>
+          <span class="item-chip">{{ $item->product_name }}{{ $item->color ? ' / '.$item->color : '' }}{{ $item->size ? ' / '.$item->size : '' }}</span>
         @endforeach
         @if($order->items->count() > 3)
           <span class="item-chip">+{{ $order->items->count() - 3 }} أخرى</span>

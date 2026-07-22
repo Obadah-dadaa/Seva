@@ -49,6 +49,7 @@ class ItemController extends Controller
             'categories' => Category::where('active', true)->orderBy('name')->get(),
             'sizes' => self::SIZES,
             'colors' => self::COLORS,
+            'variantStock' => [],
         ]);
     }
 
@@ -72,6 +73,8 @@ class ItemController extends Controller
         }
 
         $item = Item::create($data);
+
+        $this->syncVariants($item, $request);
 
         if ($request->hasFile('gallery_images')) {
             foreach ($request->file('gallery_images') as $i => $file) {
@@ -104,11 +107,19 @@ class ItemController extends Controller
      */
     public function edit(Item $item)
     {
+        $item->load(['images', 'variants']);
+
+        $variantStock = [];
+        foreach ($item->variants as $variant) {
+            $variantStock[$variant->color][$variant->size] = $variant->stock;
+        }
+
         return view('admin.items.edit', [
-            'item' => $item->load('images'),
+            'item' => $item,
             'categories' => Category::orderBy('name')->get(),
             'sizes' => self::SIZES,
             'colors' => self::COLORS,
+            'variantStock' => $variantStock,
         ]);
     }
 
@@ -139,6 +150,8 @@ class ItemController extends Controller
         }
 
         $item->update($data);
+
+        $this->syncVariants($item, $request);
 
         // Delete selected gallery images
         $deleteIds = array_filter((array) $request->input('delete_images', []), 'is_numeric');
@@ -197,7 +210,7 @@ class ItemController extends Controller
             'sizes' => ['required', 'array', 'min:1'],
             'sizes.*' => ['required', 'string', 'max:255'],
             'material' => ['required', 'string', 'max:255'],
-            'stock' => ['required', 'integer', 'min:0'],
+            'variant_stock' => ['nullable', 'array'],
             'featured' => ['nullable', 'boolean'],
             'active' => ['nullable', 'boolean'],
         ]);
@@ -207,6 +220,33 @@ class ItemController extends Controller
         $data['active'] = $request->boolean('active');
 
         return $data;
+    }
+
+    private function syncVariants(Item $item, Request $request): void
+    {
+        $colors = (array) $request->input('colors', []);
+        $sizes = (array) $request->input('sizes', []);
+        $variantStock = (array) $request->input('variant_stock', []);
+
+        $keepIds = [];
+        $total = 0;
+
+        foreach ($colors as $color) {
+            foreach ($sizes as $size) {
+                $stock = max(0, (int) ($variantStock[$color][$size] ?? 0));
+                $total += $stock;
+
+                $variant = $item->variants()->updateOrCreate(
+                    ['color' => $color, 'size' => $size],
+                    ['stock' => $stock]
+                );
+
+                $keepIds[] = $variant->id;
+            }
+        }
+
+        $item->variants()->whereNotIn('id', $keepIds)->delete();
+        $item->update(['stock' => $total]);
     }
 
     private function calculateDiscount($price, $oldPrice)

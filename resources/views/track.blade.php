@@ -329,6 +329,7 @@
           <div class="order-item-info">
             <div class="order-item-name">{{ $item->product_name }}</div>
             <div class="order-item-meta">
+              @if($item->color) لون: {{ $item->color }} &nbsp;•&nbsp; @endif
               @if($item->size) مقاس: {{ $item->size }} &nbsp;•&nbsp; @endif
               الكمية: {{ $item->quantity }}
             </div>
@@ -397,7 +398,11 @@
   @php
     $waLines = ["مرحباً SEVA 👋", "استفسار عن طلبي: {$order->order_number}", "", "المنتجات:"];
     foreach ($order->items as $item) {
-        $sizePart = $item->size ? " - مقاس {$item->size}" : '';
+        $variantParts = array_filter([
+            $item->color ? "لون {$item->color}" : null,
+            $item->size ? "مقاس {$item->size}" : null,
+        ]);
+        $sizePart = $variantParts ? ' - ' . implode(' - ', $variantParts) : '';
         $waLines[] = "• {$item->product_name}{$sizePart}";
         if ($item->public_image) $waLines[] = $item->public_image;
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\ItemVariant;
 use App\Models\Order;
 use App\Services\WebPushService;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class OrderController extends Controller
             'items.*.id' => ['required', 'integer', 'exists:items,id'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.size' => ['nullable', 'string', 'max:255'],
+            'items.*.color' => ['nullable', 'string', 'max:255'],
         ]);
 
         $order = DB::transaction(function () use ($data) {
@@ -51,8 +53,14 @@ class OrderController extends Controller
                     abort(422, 'أحد المنتجات لم يعد متاحاً.');
                 }
 
-                if ($cartItem['qty'] > $product->stock) {
-                    abort(422, 'الكمية المطلوبة غير متاحة للمنتج: ' . $product->name);
+                $variant = ItemVariant::where('item_id', $product->id)
+                    ->where('color', $cartItem['color'] ?? null)
+                    ->where('size', $cartItem['size'] ?? null)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$variant || $cartItem['qty'] > $variant->stock) {
+                    abort(422, 'الكمية المطلوبة غير متاحة لهذه التركيبة من المنتج: ' . $product->name);
                 }
 
                 $subtotal = (float) $product->price * (int) $cartItem['qty'];
@@ -65,11 +73,13 @@ class OrderController extends Controller
                     'category_name' => optional($product->category)->name,
                     'image' => $product->image,
                     'size' => $cartItem['size'] ?? null,
+                    'color' => $cartItem['color'] ?? null,
                     'unit_price' => $product->price,
                     'quantity' => $cartItem['qty'],
                     'subtotal' => $subtotal,
                 ];
 
+                $variant->decrement('stock', $cartItem['qty']);
                 $product->decrement('stock', $cartItem['qty']);
             }
 
@@ -130,9 +140,10 @@ class OrderController extends Controller
             return;
         }
 
-        $items = $order->items->map(
-            fn($i) => "• {$i->product_name}" . ($i->size ? " ({$i->size})" : '') . " × {$i->quantity} = {$i->subtotal} ج.م"
-        )->join("\n");
+        $items = $order->items->map(function ($i) {
+            $variant = trim(implode(' / ', array_filter([$i->color, $i->size])));
+            return "• {$i->product_name}" . ($variant ? " ({$variant})" : '') . " × {$i->quantity} = {$i->subtotal} ج.م";
+        })->join("\n");
 
         $paymentLabel = Order::PAYMENT_METHODS[$order->payment_method] ?? $order->payment_method;
         $ref = $order->payment_reference ? "\nمرجع الدفع: {$order->payment_reference}" : '';

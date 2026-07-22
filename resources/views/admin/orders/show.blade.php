@@ -117,6 +117,7 @@
             <th>الصورة</th>
             <th>القطعة</th>
             <th>الصنف</th>
+            <th>اللون</th>
             <th>المقاس</th>
             <th>الكمية</th>
             <th>السعر</th>
@@ -129,6 +130,7 @@
                 <td><img src="{{ $item->public_image }}" alt="{{ $item->product_name }}"></td>
                 <td>{{ $item->product_name }}<br><small>{{ $item->product_type }}</small></td>
                 <td>{{ $item->category_name }}</td>
+                <td>{{ $item->color ?: '-' }}</td>
                 <td>{{ $item->size ?: '-' }}</td>
                 <td>{{ $item->quantity }}</td>
                 <td>{{ number_format($item->unit_price) }}</td>

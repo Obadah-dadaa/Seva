@@ -331,6 +331,11 @@
         <span class="modal-price-old" id="modalOldPrice"></span>
       </div>
 
+      <div id="modalColorsBlock">
+        <p class="modal-section-label" data-i18n="modal.color.label">اختر اللون</p>
+        <div class="modal-sizes" id="modalColors"></div>
+      </div>
+
       <div id="modalSizesBlock">
         <p class="modal-section-label" data-i18n="modal.size.label">اختر المقاس</p>
         <div class="modal-sizes" id="modalSizes"></div>
@@ -348,7 +353,7 @@
       <div class="modal-features" id="modalFeatures"></div>
 
       <div id="modalOutOfStock" style="display:none; text-align:center; padding:12px 16px; background:#fff8f0; border:1px solid #f0c070; border-radius:12px; color:#8b5e00; font-weight:700; font-size:.9rem;">
-        نفذت الكمية — سيتوفر قريباً ✨
+        <span id="modalOutOfStockText">نفذت الكمية — سيتوفر قريباً ✨</span>
       </div>
 
       <div class="modal-actions" id="modalActions">

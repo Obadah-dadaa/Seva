@@ -52,6 +52,11 @@ class Item extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function variants()
+    {
+        return $this->hasMany(ItemVariant::class);
+    }
+
     public function getPublicImageAttribute()
     {
         if (!$this->image) {

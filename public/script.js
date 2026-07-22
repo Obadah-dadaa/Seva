@@ -76,6 +76,9 @@ const i18n = {
     "footer.contact": "تواصل معنا",
     "footer.copy": "© 2026 SEVA. جميع الحقوق محفوظة",
     "modal.size.label": "اختر المقاس",
+    "modal.color.label": "اختر اللون",
+    "modal.out_of_stock": "نفذت الكمية — سيتوفر قريباً ✨",
+    "modal.combo_out_of_stock": "هذا الخيار غير متوفر حالياً — سيتوفر قريباً ✨",
     "modal.qty.label": "الكمية",
     "modal.add": "اطلب الآن",
     "modal.remove": "حذف من السلة",
@@ -89,6 +92,7 @@ const i18n = {
     "cart.checkout": "إتمام الطلب ✦",
     "cart.empty": "سلتك فارغة",
     "cart.size": "مقاس",
+    "cart.color": "لون",
     "cart.qty": "الكمية",
     "checkout.customer.title": "بيانات التوصيل",
     "checkout.payment.title": "طريقة الدفع",
@@ -202,6 +206,9 @@ const i18n = {
     "footer.contact": "Get in Touch",
     "footer.copy": "© 2026 SEVA. All rights reserved",
     "modal.size.label": "Choose Size",
+    "modal.color.label": "Choose Color",
+    "modal.out_of_stock": "Out of stock — coming soon ✨",
+    "modal.combo_out_of_stock": "This option is currently unavailable — coming soon ✨",
     "modal.qty.label": "Quantity",
     "modal.add": "Add to Cart",
     "modal.remove": "Remove from Cart",
@@ -215,6 +222,7 @@ const i18n = {
     "cart.checkout": "Checkout ✦",
     "cart.empty": "Your cart is empty",
     "cart.size": "Size",
+    "cart.color": "Color",
     "cart.qty": "Qty",
     "checkout.customer.title": "Delivery Details",
     "checkout.payment.title": "Payment Method",
@@ -303,6 +311,7 @@ try { cart = JSON.parse(localStorage.getItem('seva_cart') || '[]'); } catch(e) {
 let currentProduct = null;
 let currentQty = 1;
 let selectedSize = null;
+let selectedColor = null;
 let selectedPaymentMethod = null;
 let isSubmittingOrder = false;
 
@@ -310,16 +319,64 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
-// A cart line is identified by product id AND size, so the same product can
-// be added in multiple sizes as separate lines.
-function findCartLine(id, size) {
-  return cart.find((c) => sameId(c.id, id) && (c.size || null) === (size || null));
+// Each (color, size) combination of a product has its own stock.
+function findVariant(product, color, size) {
+  if (!product || !Array.isArray(product.variants)) return null;
+  return (
+    product.variants.find(
+      (v) => (v.color || null) === (color || null) && (v.size || null) === (size || null),
+    ) || null
+  );
 }
 
-// Refresh the modal add/remove button based on the currently selected size.
-function refreshModalAction() {
+// A cart line is identified by product id, size AND color, so the same product can
+// be added in multiple size/color combinations as separate lines.
+function findCartLine(id, size, color) {
+  return cart.find(
+    (c) =>
+      sameId(c.id, id) &&
+      (c.size || null) === (size || null) &&
+      (c.color || null) === (color || null),
+  );
+}
+
+// Refresh availability messaging/controls for the currently selected color+size combo.
+function refreshVariantAvailability() {
   if (!currentProduct) return;
-  setModalActionState(currentProduct.stock === 0 ? "hidden" : "add");
+
+  document.querySelectorAll("#modalSizes .modal-size-btn").forEach((btn) => {
+    const v = findVariant(currentProduct, selectedColor, btn.dataset.value);
+    btn.classList.toggle("option-unavailable", !v || v.stock <= 0);
+  });
+
+  document.querySelectorAll("#modalColors .modal-size-btn").forEach((btn) => {
+    const v = findVariant(currentProduct, btn.dataset.value, selectedSize);
+    btn.classList.toggle("option-unavailable", !v || v.stock <= 0);
+  });
+
+  const variant = findVariant(currentProduct, selectedColor, selectedSize);
+  const available = !!variant && variant.stock > 0;
+  const t = i18n[currentLang];
+  const outOfStockEl = document.getElementById("modalOutOfStock");
+  const outOfStockTextEl = document.getElementById("modalOutOfStockText");
+  const qtyRow = document.querySelector(".modal-qty-row");
+
+  if (!available) {
+    if (outOfStockTextEl) {
+      outOfStockTextEl.textContent =
+        currentProduct.stock === 0 ? t["modal.out_of_stock"] : t["modal.combo_out_of_stock"];
+    }
+    if (outOfStockEl) outOfStockEl.style.display = "";
+    if (qtyRow) qtyRow.style.display = "none";
+    setModalActionState("hidden");
+  } else {
+    if (outOfStockEl) outOfStockEl.style.display = "none";
+    if (qtyRow) qtyRow.style.display = "";
+    currentQty = Math.min(currentQty, variant.stock);
+    document.getElementById("qtyNum").textContent = currentQty;
+    // Always allow adding — re-adding the same combo accumulates its quantity.
+    setModalActionState("add");
+  }
 }
 
 function jsString(value) {
@@ -342,13 +399,19 @@ function normalizeCartItems() {
   cart = cart
     .map(function(item) {
       const product = products.find((p) => sameId(p.id, item && item.id));
-      if (!product || product.stock <= 0) return null;
+      if (!product) return null;
+
+      const size = (item && item.size) || null;
+      const color = (item && item.color) || null;
+      const variant = findVariant(product, color, size);
+      if (!variant || variant.stock <= 0) return null;
 
       const qty = Math.max(1, parseInt(item.qty, 10) || 1);
       return {
         ...product,
-        qty: Math.min(qty, product.stock),
-        size: item.size || null,
+        qty: Math.min(qty, variant.stock),
+        size: size,
+        color: color,
       };
     })
     .filter(Boolean);
@@ -635,6 +698,7 @@ function openModal(id) {
   currentProduct = p;
   currentQty = 1;
   selectedSize = p.sizes.length > 0 ? p.sizes[0] : null;
+  selectedColor = p.colors.length > 0 ? p.colors[0] : null;
 
   const modalImg = document.getElementById("modalImg");
   modalImg.classList.remove("image-fallback");
@@ -676,6 +740,21 @@ function openModal(id) {
 
   document.getElementById("qtyNum").textContent = 1;
 
+  // Colors
+  const colorsBlock = document.getElementById("modalColorsBlock");
+  const colorsEl = document.getElementById("modalColors");
+  if (p.colors.length > 0) {
+    colorsBlock.style.display = "";
+    colorsEl.innerHTML = p.colors
+      .map(
+        (c, i) =>
+          `<button class="modal-size-btn ${i === 0 ? "selected" : ""}" data-value="${c}" onclick='selectColor(this,${jsString(c)})'>${c}</button>`,
+      )
+      .join("");
+  } else {
+    colorsBlock.style.display = "none";
+  }
+
   // Sizes
   const sizesBlock = document.getElementById("modalSizesBlock");
   const sizesEl = document.getElementById("modalSizes");
@@ -684,7 +763,7 @@ function openModal(id) {
     sizesEl.innerHTML = p.sizes
       .map(
         (s, i) =>
-          `<button class="modal-size-btn ${i === 0 ? "selected" : ""}" onclick='selectSize(this,${jsString(s)})'>${s}</button>`,
+          `<button class="modal-size-btn ${i === 0 ? "selected" : ""}" data-value="${s}" onclick='selectSize(this,${jsString(s)})'>${s}</button>`,
       )
       .join("");
   } else {
@@ -696,20 +775,8 @@ function openModal(id) {
     <div class="modal-feature"><span>${t["modal.feat.material"]}</span><span>${p.material}</span></div>
   `;
 
-  // Cart state / stock
-  const outOfStockModal = p.stock === 0;
-  const outOfStockEl = document.getElementById("modalOutOfStock");
-  const qtyRow = document.querySelector(".modal-qty-row");
-  if (outOfStockModal) {
-    if (outOfStockEl) outOfStockEl.style.display = "";
-    if (qtyRow) qtyRow.style.display = "none";
-    setModalActionState("hidden");
-  } else {
-    if (outOfStockEl) outOfStockEl.style.display = "none";
-    if (qtyRow) qtyRow.style.display = "";
-    // Always allow adding — re-adding the same size accumulates its quantity.
-    setModalActionState("add");
-  }
+  // Cart state / per-combo stock
+  refreshVariantAvailability();
 
   document.getElementById("productModal").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -717,11 +784,20 @@ function openModal(id) {
 
 function selectSize(btn, size) {
   document
-    .querySelectorAll(".modal-size-btn")
+    .querySelectorAll("#modalSizes .modal-size-btn")
     .forEach((b) => b.classList.remove("selected"));
   btn.classList.add("selected");
   selectedSize = size;
-  refreshModalAction();
+  refreshVariantAvailability();
+}
+
+function selectColor(btn, color) {
+  document
+    .querySelectorAll("#modalColors .modal-size-btn")
+    .forEach((b) => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedColor = color;
+  refreshVariantAvailability();
 }
 
 // ===== IMAGE LIGHTBOX (full-screen preview) =====
@@ -764,7 +840,9 @@ function closeModalDirect() {
 
 function changeQty(delta) {
   const nextQty = Math.max(1, currentQty + delta);
-  if (currentProduct && nextQty > currentProduct.stock) {
+  const variant = currentProduct ? findVariant(currentProduct, selectedColor, selectedSize) : null;
+  const maxStock = variant ? variant.stock : 0;
+  if (currentProduct && nextQty > maxStock) {
     showToast(i18n[currentLang]["toast.out_of_stock"]);
     return;
   }
@@ -775,20 +853,31 @@ function changeQty(delta) {
 // ===== CART =====
 function addToCart() {
   if (!currentProduct) return;
-  const existing = findCartLine(currentProduct.id, selectedSize);
-  // Stock is per product, so all sizes of this product share the same stock.
-  const productQtyInCart = cart.reduce(
-    (s, c) => s + (sameId(c.id, currentProduct.id) ? c.qty : 0),
+  const variant = findVariant(currentProduct, selectedColor, selectedSize);
+  if (!variant || variant.stock <= 0) {
+    showToast(i18n[currentLang]["toast.out_of_stock"]);
+    return;
+  }
+  const existing = findCartLine(currentProduct.id, selectedSize, selectedColor);
+  // Stock is per (color, size) combo, so only the matching combo's cart lines count.
+  const comboQtyInCart = cart.reduce(
+    (s, c) =>
+      s +
+      (sameId(c.id, currentProduct.id) &&
+      (c.size || null) === (selectedSize || null) &&
+      (c.color || null) === (selectedColor || null)
+        ? c.qty
+        : 0),
     0,
   );
-  if (currentQty + productQtyInCart > currentProduct.stock) {
+  if (currentQty + comboQtyInCart > variant.stock) {
     showToast(i18n[currentLang]["toast.out_of_stock"]);
     return;
   }
   if (existing) {
     existing.qty += currentQty;
   } else {
-    cart.push({ ...currentProduct, qty: currentQty, size: selectedSize });
+    cart.push({ ...currentProduct, qty: currentQty, size: selectedSize, color: selectedColor });
   }
   updateCart();
   setModalActionState("add");
@@ -799,7 +888,12 @@ function addToCart() {
 function removeFromCart() {
   if (!currentProduct) return;
   cart = cart.filter(
-    (c) => !(sameId(c.id, currentProduct.id) && (c.size || null) === (selectedSize || null)),
+    (c) =>
+      !(
+        sameId(c.id, currentProduct.id) &&
+        (c.size || null) === (selectedSize || null) &&
+        (c.color || null) === (selectedColor || null)
+      ),
   );
   updateCart();
   setModalActionState("add");
@@ -840,19 +934,23 @@ function updateCart() {
       }
       const g = groups[groupIndex[key]];
       g.qty += item.qty;
-      g.lines.push({ size: item.size, qty: item.qty });
+      g.lines.push({ size: item.size, color: item.color, qty: item.qty });
     });
 
     itemsEl.innerHTML = groups
       .map((g) => {
         const lines = g.lines
-          .map(
-            (line) => `
+          .map((line) => {
+            const metaParts = [];
+            if (line.color) metaParts.push(t["cart.color"] + ": " + line.color);
+            if (line.size) metaParts.push(t["cart.size"] + ": " + line.size);
+            const meta = metaParts.length ? metaParts.join(" · ") + " · " : "";
+            return `
           <div class="cart-line">
-            <span class="cart-line-meta">${line.size ? t["cart.size"] + ": " + line.size + " · " : ""}${t["cart.qty"]}: ${line.qty} — ${(g.price * line.qty).toLocaleString("ar-EG")} ${t["currency"]}</span>
-            <button class="cart-line-remove" type="button" onclick='removeCartLine(${jsString(g.id)}, ${jsString(line.size || "")})' aria-label="${t["modal.remove"]}">✕</button>
-          </div>`,
-          )
+            <span class="cart-line-meta">${meta}${t["cart.qty"]}: ${line.qty} — ${(g.price * line.qty).toLocaleString("ar-EG")} ${t["currency"]}</span>
+            <button class="cart-line-remove" type="button" onclick='removeCartLine(${jsString(g.id)}, ${jsString(line.size || "")}, ${jsString(line.color || "")})' aria-label="${t["modal.remove"]}">✕</button>
+          </div>`;
+          })
           .join("");
         const totalRow =
           g.lines.length > 1
@@ -880,9 +978,10 @@ function updateCart() {
   populateGrids();
 }
 
-function removeCartLine(id, size) {
+function removeCartLine(id, size, color) {
   const s = size || null;
-  cart = cart.filter((c) => !(sameId(c.id, id) && (c.size || null) === s));
+  const c2 = color || null;
+  cart = cart.filter((c) => !(sameId(c.id, id) && (c.size || null) === s && (c.color || null) === c2));
   updateCart();
   showToast(i18n[currentLang]["toast.removed"]);
 }
@@ -1030,6 +1129,7 @@ async function submitOrder(paymentMethod, paymentReference = null) {
       id: item.id,
       qty: item.qty,
       size: item.size,
+      color: item.color,
     })),
   };
 
