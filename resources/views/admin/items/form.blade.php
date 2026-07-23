@@ -91,7 +91,7 @@
     <div class="form-field full">
         <label>مخزون كل تركيبة (لون × مقاس)</label>
         <div id="variantStockWrap" style="overflow-x:auto;"></div>
-        <small>حدد الألوان والمقاسات أعلاه أولاً، ثم أدخل الكمية المتاحة لكل تركيبة على حدة. تركيبة بمخزون 0 تظهر للعميل "غير متوفر".</small>
+        <small>حدد الألوان والمقاسات أعلاه أولاً، ثم أدخل الكمية المتاحة لكل تركيبة على حدة. الخانات المظللة باللون الأحمر بمخزون 0 ولن تظهر للعميل.</small>
     </div>
     <div class="form-field full">
         <label>الوصف</label>
@@ -161,7 +161,8 @@ function toggleGalleryDelete(id) {
             html += '<tr><th style="padding:6px 10px;border:1px solid #e8e0d6;background:#f7f3ee;">' + color + '</th>';
             sizes.forEach(function (size) {
                 var value = (currentStock[color] && currentStock[color][size] !== undefined) ? currentStock[color][size] : 0;
-                html += '<td style="padding:4px;border:1px solid #e8e0d6;">' +
+                var zero = Number(value) <= 0;
+                html += '<td style="padding:4px;border:1px solid #e8e0d6;' + (zero ? 'background:#fbe1df;' : '') + '">' +
                     '<input type="number" min="0" style="width:70px;" ' +
                     'data-color="' + color + '" data-size="' + size + '" ' +
                     'name="variant_stock[' + color + '][' + size + ']" value="' + value + '">' +
@@ -172,11 +173,32 @@ function toggleGalleryDelete(id) {
         html += '</table>';
 
         wrap.innerHTML = html;
+
+        wrap.querySelectorAll('input[data-color][data-size]').forEach(function (input) {
+            input.addEventListener('input', function () {
+                input.closest('td').style.background = Number(input.value) > 0 ? '' : '#fbe1df';
+            });
+        });
     }
 
     document.getElementById('colorsSelect').addEventListener('change', rebuildVariantTable);
     document.getElementById('sizesSelect').addEventListener('change', rebuildVariantTable);
     rebuildVariantTable();
+
+    var form = document.getElementById('variantStockWrap').closest('form');
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            var zeroCount = 0;
+            document.querySelectorAll('#variantStockWrap input[data-color][data-size]').forEach(function (input) {
+                if (Number(input.value) <= 0) zeroCount++;
+            });
+            if (zeroCount > 0) {
+                var proceed = confirm('يوجد ' + zeroCount + ' تركيبة لون/مقاس بمخزون 0، لن تظهر هذه التركيبات للعميل. هل تريد المتابعة؟');
+                if (!proceed) e.preventDefault();
+            }
+        });
+    }
 })();
 
 // ===== Add a new color inline =====

@@ -329,6 +329,23 @@ function findVariant(product, color, size) {
   );
 }
 
+// Only offer colors/sizes that have at least one in-stock combination —
+// a color/size with no stocked variant would otherwise show as selectable
+// and then immediately report "unavailable".
+function availableColors(product) {
+  if (!Array.isArray(product.variants)) return product.colors || [];
+  return (product.colors || []).filter((c) =>
+    product.variants.some((v) => v.color === c && v.stock > 0),
+  );
+}
+
+function availableSizes(product) {
+  if (!Array.isArray(product.variants)) return product.sizes || [];
+  return (product.sizes || []).filter((s) =>
+    product.variants.some((v) => v.size === s && v.stock > 0),
+  );
+}
+
 // A cart line is identified by product id, size AND color, so the same product can
 // be added in multiple size/color combinations as separate lines.
 function findCartLine(id, size, color) {
@@ -697,8 +714,10 @@ function openModal(id) {
   if (!p) return;
   currentProduct = p;
   currentQty = 1;
-  selectedSize = p.sizes.length > 0 ? p.sizes[0] : null;
-  selectedColor = p.colors.length > 0 ? p.colors[0] : null;
+  const inStockSizes = availableSizes(p);
+  const inStockColors = availableColors(p);
+  selectedSize = inStockSizes.length > 0 ? inStockSizes[0] : (p.sizes.length > 0 ? p.sizes[0] : null);
+  selectedColor = inStockColors.length > 0 ? inStockColors[0] : (p.colors.length > 0 ? p.colors[0] : null);
 
   const modalImg = document.getElementById("modalImg");
   modalImg.classList.remove("image-fallback");
@@ -743,12 +762,12 @@ function openModal(id) {
   // Colors
   const colorsBlock = document.getElementById("modalColorsBlock");
   const colorsEl = document.getElementById("modalColors");
-  if (p.colors.length > 0) {
+  if (inStockColors.length > 0) {
     colorsBlock.style.display = "";
-    colorsEl.innerHTML = p.colors
+    colorsEl.innerHTML = inStockColors
       .map(
         (c, i) =>
-          `<button class="modal-size-btn ${i === 0 ? "selected" : ""}" data-value="${c}" onclick='selectColor(this,${jsString(c)})'>${c}</button>`,
+          `<button class="modal-size-btn ${c === selectedColor ? "selected" : ""}" data-value="${c}" onclick='selectColor(this,${jsString(c)})'>${c}</button>`,
       )
       .join("");
   } else {
@@ -758,12 +777,12 @@ function openModal(id) {
   // Sizes
   const sizesBlock = document.getElementById("modalSizesBlock");
   const sizesEl = document.getElementById("modalSizes");
-  if (p.sizes.length > 0) {
+  if (inStockSizes.length > 0) {
     sizesBlock.style.display = "";
-    sizesEl.innerHTML = p.sizes
+    sizesEl.innerHTML = inStockSizes
       .map(
         (s, i) =>
-          `<button class="modal-size-btn ${i === 0 ? "selected" : ""}" data-value="${s}" onclick='selectSize(this,${jsString(s)})'>${s}</button>`,
+          `<button class="modal-size-btn ${s === selectedSize ? "selected" : ""}" data-value="${s}" onclick='selectSize(this,${jsString(s)})'>${s}</button>`,
       )
       .join("");
   } else {
